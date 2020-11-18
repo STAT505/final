@@ -1,0 +1,149 @@
+---
+title: |
+    | STAT 505: Final Exam
+    | Name:
+output: pdf_document 
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(tidyverse)
+library(rstanarm)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Please turn in the exam to GitHub and include the R Markdown code and a PDF or Word file with output. Please verify that all of the code has compiled and the graphics look like you think they should on your files, you are welcome to upload image files directly if they look distorted in the output file.
+
+While the exam is open book and you can use any resources from class or freely available on the internet, this is strictly an individual endeavor and **you should not discuss the problems with anyone outside the course instructor including group mates or class members.** All resources, including websites, should be acknowledged.
+
+For full credit, include your code and graphics for each question and create neat output by using options like `kable()` for tables and writing results in line with R commands.
+
+## Short Answer Questions (16 points)
+
+For questions in this section, keep your answers concise. You are welcome to use a combination of prose, math, and pseudocode, but your responses should be well thought out and defended.
+
+### 1. (4 points)
+Detail the process for conducting a posterior predictive check and then describe how they can be used for assessing model fit.
+
+### 2. (4 points)
+Make an argument (to a collaborator) for centering and/or standardizing continuous predictors.
+
+### 3. (4 points)
+Why should inferences about sampling units be characterized as differences in predictors _between_ units rather than differences in predictors _within_ a sampling unit?
+
+### 4. (4 points)
+
+Consider the distribution of an expected outcome given a set of predictors and the distribution of a new observation given a set of predictors. Describe how the point estimate and uncertainty would differ (or not) for the two situations.
+
+\newpage
+
+## Code Interpretation (16 points)
+
+For this question, we will use a subset of a dataset that contains Indian recipes.
+```{r}
+indian_food <- read_csv('https://raw.githubusercontent.com/stat408/final_exam/master/indian.csv') %>%
+  filter(course != 'starter') %>%
+  select(-ingredients, -diet, -region) %>% 
+  mutate(flavor_profile = factor(flavor_profile), course = factor(course)) 
+summary(indian_food)
+```
+
+### 1. (4 points)
+Using the following model specification right out the complete linear model and define all of the coefficients in the model.
+
+```{r}
+model_specification <- formula(cook_time ~ prep_time + flavor_profile + course)
+model_specification
+```
+
+### 2. (4 points)
+Interpret the results.
+
+```{r}
+lm(model_specification, data = indian_food) %>% summary()
+```
+
+### 3. (4 points)
+Interpret the results.
+
+```{r}
+stan_glm(model_specification, data = indian_food, refresh = 0) 
+```
+
+### 4. (4 points)
+What is the problem with trying to fit this model?
+
+```{r}
+lm(cook_time ~ prep_time + flavor_profile + course + flavor_profile:course, 
+   data = indian_food) %>% summary()
+```
+
+\newpage
+
+## Simulation Question (12 points)
+
+### 1. (4 points)
+
+Consider the code below. Create a figure of x and y. What linear regression assumption does this data violate?
+
+```{r}
+set.seed(11112020)
+n <- 500
+x <- seq(1,20, length.out = n)
+beta <- c(1, .1)
+sigma <- sqrt(x)
+y <- rnorm(n, beta[1] + beta[2] * x, sd = sigma)
+
+```
+
+
+### 2. (4 points)
+
+How well does a linear regression model recover the point estimates of beta? Justify your answer (simulation may be useful).
+
+```{r}
+lm(y ~x) %>% summary()
+```
+
+### 2. (4 points)
+
+How well does a linear regression model capture the uncertainty in a predictions for y conditional on 
+
+- x = 1
+- x = 10
+- x = 20
+
+\newpage
+
+
+## Data Analysis (Scaled to be worth 26 points)
+
+
+Using the Indian recipe dataset fit a logistic regression model to model the probability of a dish being classified as a main course. Write your results in a short report (shorter than the projects). Turn this document in separately. Including figures and tables, I am setting a four page maximum using standard PDF output settings in RMD. This will require careful selection and sizing of tables and figures. The page limit does not apply to references or code in the appendix.
+
+
+| __Report generalities__ | __Points__  |
+|:------------------------|---:|
+|Spelling, grammar, writing clarity, paragraphs, section labels | /8  |
+|Citations/Acknowledgments for papers and packages used | /4  |
+|Code in appendix| /4  |
+
+
+| __Introduction + Data Overview__ | __Points__  |
+|:------------------------|---:|
+|Research question | /4  | 
+|Variables with units and descriptive statistics |  /4 |  
+|Data Viz: Figure Clarity (Titles, Labels, and Captions) | /4  | 
+
+
+| __Statistical Procedures__ | __Points__  | |
+|:------------------------|---:|
+|Define model to fit with complete notation (including priors) | /8  |
+|Defense of model choice| /4 | 
+
+| __Results + Discussion__ | __Points__  |
+|:------------------------|---:|
+|Discuss Results in the context of the research question |  /4 |
+|Summarize estimates from final model including uncertainty | /8   |
+
+
